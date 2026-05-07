@@ -1,66 +1,67 @@
-# Serviço de Componentes
+# Component Service
 
-Parte de um **Simulador de Pipeline Industrial da Indústria 4.0** distribuído, construído com arquitetura de micro-serviços orientada a eventos.
-
----
-
-## 🧠 Visão Geral do Sistema
-
-Este projeto simula um pipeline de produção industrial real, onde serviços independentes colaboram para produzir bens.
-
-Fluxo do pipeline:
-
-Matéria-prima → Processamento → Produção de Componentes → Montagem do Produto
-
-Cada etapa opera como um microsserviço isolado, comunicando através de eventos Kafka.
+Part of a distributed **Industry 4.0 Industrial Pipeline Simulator**, built with an event-driven microservices architecture.
 
 ---
 
-## 🎯 Função deste Serviço
+## 🧠 System Overview
 
-O **Serviço de Componentes** é responsável pela produção de peças industriais a partir de materiais processados.
+This project simulates a real industrial production pipeline, where independent services collaborate to produce goods.
 
-Atua como a terceira etapa do pipeline, sendo responsável por transformar materiais utilizáveis em componentes prontos para montagem.
+Pipeline Flow:
 
-Exemplos:
-- Aço → Pistões, Cambota, Chassis
-- Vidro → Ecrã
-- Borracha → Pneus
+Raw Material → Processing → Component Production → Product Assembly
 
----
-
-## ⚙️ Responsabilidades
-
-- Consumir eventos de materiais processados do Kafka
-- Validar a disponibilidade de recursos necessários
-- Aplicar regras de compatibilidade (BOM - Bill of Materials)
-- Produzir componentes industriais
-- Persistir componentes produzidos
-- Publicar eventos para o serviço de montagem
+Each step operates as an isolated microservice, communicating via Kafka events.
 
 ---
 
-## 🔄 Posição no Pipeline
+## 🎯 Function of this Service
 
-[ Serviço de Matéria-Prima ] → [ Serviço de Processamento ] → [ Serviço de Componentes ] → [ Serviço de Montagem ]
+The **Component Service** is responsible for producing industrial parts from processed materials.
+
+It acts as the third stage of the pipeline, responsible for transforming usable materials into components ready for assembly.
+
+Examples:
+
+- Steel → Pistons, Crankshaft, Chassis
+- Glass → Screen
+- Rubber → Tires
 
 ---
 
-## 📡 Comunicação Orientada a Eventos
+## ⚙️ Responsibilities
 
-### Eventos Consumidos
+- Consume processed material events from Kafka
+- Validate the availability of necessary resources
+- Apply compatibility rules (BOM - Bill of Materials)
+- Produce industrial components
+- Persist produced components
+- Publish events for assembly service
+
+---
+
+## 🔄 Position in the Pipeline
+
+[Raw Material Service] → [Processing Service] → [Component Service] → [Assembly Service]
+
+---
+
+## 📡 Event-Driven Communication
+
+### Events Consumed
 
 - `MATERIAL_PROCESSED`
 
-### Eventos Produzidos
+### Events Produced
 
 - `COMPONENT_CREATED`
 
 ---
 
-## 📦 Estrutura do Evento
+## 📦 Event Structure
 
-### Evento de Entrada
+### Entry Event
 ```
 {
 "eventId": "uuid",
@@ -77,13 +78,13 @@ Exemplos:
 
 "name": "Steel",
 
-"quantidade": 8
+"quantity": 8
 
 }
 }
 ```
 
-### Evento de Saída
+### Exit Event
 
 ```
 {
@@ -101,12 +102,13 @@ Exemplos:
 
 "name": "Engine",
 
-"quantidade": 1,
+"quantity": 1,
 
 "components": [
-{ "name": "Piston", "quantidade": 4 },
-{ "name": "Crankshaft", "quantidade": 1 },
-{ "name": "Engine Block", "quantidade": 1 }
+{ "name": "Piston", "quantity": 4 },
+{ "name": "Crankshaft", "quantity": 1 },
+{ "name": "Engine Block", "quantity": 1 }
+
 ]
 
 }
@@ -115,75 +117,74 @@ Exemplos:
 
 ---
 
-## 🧩 Validação de BOM (Bill of Materials)
+## 🧩 BOM (Bill of Materials) Validation
 
-Este serviço implementa validação obrigatória de estrutura de componentes.
+This service implements mandatory component structure validation.
 
-Exemplo: Motor
+Example: Engine
 
-
-### Motor
+### Engine
 ```
-├── Pistões (4x) → Aço
-├── Cambota (1x) → Aço
-├── Bloco (1x) → Alumínio
-├── Cabeçote (1x) → Alumínio
+├── Pistons (4x) → Steel
+├── Crankshaft (1x) → Steel
+├── Block (1x) → Aluminum
+├── Cylinder Head (1x) → Aluminum
 ```
 
-Regras aplicadas:
+Rules applied:
 
-- Nenhum componente é produzido sem materiais suficientes
-- Dependências devem ser satisfeitas antes da produção
-- Compatibilidade entre componentes deve ser validada
-- Cada componente mantém referência ao produtor
+- No component is produced without sufficient materials
+- Dependencies must be met before production
+- Compatibility between components must be validated
+- Each component maintains a reference to the producer
 
 ---
 
-## ⏱️ Pipeline de Produção (Simulação de Latência)
+## ⏱️ Production Pipeline (Latency Simulation)
 
-A produção de componentes segue etapas com duração definida.
+Component production follows stages with defined durations.
 
-Exemplo: Produção de Motor
+Example: Engine Production
 
 ```
 [
-{ "name": "PREPARAÇÃO_DE_PARTES", "durationMs": 6000 },
-{ "name": "MONTAGEM", "durationMs": 10000 },
-{ "name": "CONTROLO_DE_QUALIDADE", "durationMs": 4000 }
+{ "name": "PARTS_PREPARATION", "durationMs": 6000 },
+{ "name": "ASSEMBLY", "durationMs": 10000 },
+{ "name": "QUALITY_CONTROL", "durationMs": 4000 }
+
 ]
 ```
 
-Isto simula o tempo real de produção industrial.
+This simulates real-time industrial production.
 
 ---
 
-**Nota:** Em funcionamento normal, a produção é acionada automaticamente por eventos Kafka.
+**Note:** In normal operation, production is automatically triggered by Kafka events.
 
 ---
 
-## 🔄 Fluxo Interno
+## 🔄 Internal Flow
 
-Receber evento Kafka (MATERIAL_PROCESSED)  
-Validar disponibilidade de materiais  
-Validar regras de BOM  
-Executar pipeline de produção (com atraso)  
-Criar componente  
-Persistir na base de dados  
-Publicar evento COMPONENT_CREATED  
-
----
-
-## 🗄️ Propriedade dos Dados
-
-Este serviço segue os princípios da arquitetura de micro-serviços:
-
-## Base de dados própria
-- Sem acesso direto aos dados de outros serviços
-- Comunicação estritamente via eventos Kafka
+Receive Kafka event (MATERIAL_PROCESSED)
+Validate material availability
+Validate BOM rules
+Execute production pipeline (with delay)
+Create component
+Persist in the database Publish COMPONENT_CREATED event
 
 ---
 
-## 🧱 Tecnologias
+## 🗄️ Data Ownership
+
+This service follows the principles of microservices architecture:
+
+## Own database
+- No direct access to data from other services
+- Communication strictly via Kafka events
+
+---
+
+## 🧱 Technologies
 
 - Java + Spring Boot
 - Apache Kafka
@@ -192,30 +193,31 @@ Este serviço segue os princípios da arquitetura de micro-serviços:
 
 ---
 
-## Executar o Serviço
+## Running the Service
 
 - docker-compose up --build
 
 ---
 
-## 🧠 Conceitos-chave Demonstrados
+## 🧠 Key Concepts Demonstrated
 
-- Validação de Bill of Materials (BOM)
-- Gestão de dependências em sistemas distribuídos
-- Produção orientada a eventos
-- Simulação de pipelines industriais com latência
-- Consistência e desacoplamento entre serviços
+- Bill of Materials Validation (BOM)
+
+- Dependency management in distributed systems
+- Event-driven production
+- Simulation of industrial pipelines with latency
+- Consistency and decoupling between services
 
 ---
 
-## Outros Serviços:
+## Other Services:
 
 - [raw-material-service](https://github.com/Valdemar-Andrade/raw-material-service.git)
 - [processing-service](https://github.com/Valdemar-Andrade/processing-service.git)
 
 ---
 
-## 👤 Desenvolvedor
+## 👤 Developer
 
-- GitHub: [@Valdemar-Andrade]  
+- GitHub: [@Valdemar-Andrade]
 - LinkedIn: [Valdemar Andrade](https://www.linkedin.com/in/valdemar-andrade-8b0b45189)
