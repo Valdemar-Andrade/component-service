@@ -17,7 +17,7 @@ public class KafkaProcessedMaterialConsumer {
         this.componentService = componentService;
     }
 
-    @KafkaListener(topics = "industria-carro", groupId = "component-group")
+    @KafkaListener(id = "component-service", topics = "industria-carro")
     public void consume(BaseEvent event) {
         try {
             if ("MATERIAL_PROCESSED".equals(event.eventType())) {
@@ -27,7 +27,7 @@ public class KafkaProcessedMaterialConsumer {
                 logger.debug("[COMPONENT-SERVICE] Evento ignorado: {}", event.eventType());
             }
         } catch (Exception e) {
-            logger.error("[COMPONENT-SERVICE] Erro ao processar evento: {}", e.getMessage());
+            //logger.error("[COMPONENT-SERVICE] Erro ao processar evento: {}", e.getMessage());
         }
     }
 

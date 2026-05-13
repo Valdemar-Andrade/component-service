@@ -27,12 +27,11 @@ public class PipelineService {
 
     @Async
     public void execute(ProductionPipeline pipeline, ComponentItem entity, Map<String, Object> materialPayload) {
-        // Logs claros conforme exigido
         System.out.println("[COMPONENTE] Iniciando produção de: " + entity.getName());
 
         for (PipelineStep step : pipeline.getSteps()) {
             try {
-                Thread.sleep(step.getDurationMs()); // Latência real
+                Thread.sleep(step.getDurationMs());
                 System.out.println("Etapa concluída: " + step.getName());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -40,7 +39,6 @@ public class PipelineService {
             }
         }
 
-        // Monta o payload respeitando a árvore: Component -> Material
         ComponentPayload payload = new ComponentPayload(
                 entity.getId().toString(),
                 entity.getName(),
@@ -51,7 +49,7 @@ public class PipelineService {
         );
 
         BaseEvent event = BaseEvent.create(
-                "COMPONENT_CREATED", // Evento obrigatório
+                "COMPONENT_CREATED",
                 "component-service",
                 "assembly-service",
                 payload

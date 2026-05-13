@@ -31,19 +31,15 @@ public class ComponentService {
         Map<String, Object> materialData = (Map<String, Object>) event.payload();
         String materialName = materialData.get("name").toString().toUpperCase();
 
-        // 1. Incrementa o stock de material recebido
         MaterialStock stock = stockRepository.findById(materialName)
                 .orElse(new MaterialStock(materialName, 0));
         stock.setAvailableQuantity(stock.getAvailableQuantity() + 1);
         stockRepository.save(stock);
 
-        // 2. Tenta fabricar baseado no BOM do enunciado
         checkAndProduce(materialName, materialData);
     }
 
     private void checkAndProduce(String materialName, Map<String, Object> lastMaterialPayload) {
-        // Exemplo de regra BOM: 1 Unidade de Aço (Steel) gera 1 Pistão
-        // Mas para Pneus, poderíamos exigir mais material se desejado.
         if (materialName.equals("STEEL") && hasStock("STEEL", 1)) {
             consumeAndStartPipeline("PISTON", "STEEL", 1, lastMaterialPayload);
         }
@@ -53,12 +49,10 @@ public class ComponentService {
     }
 
     private void consumeAndStartPipeline(String componentName, String materialUsed, int qty, Map<String, Object> payload) {
-        // Deduz do estoque
         MaterialStock stock = stockRepository.findById(materialUsed).get();
         stock.setAvailableQuantity(stock.getAvailableQuantity() - qty);
         stockRepository.save(stock);
 
-        // Salva componente como IN_PROGRESS
         ComponentItem item = ComponentItem.builder()
                 .name(componentName)
                 .type("COMPONENT")
@@ -66,7 +60,6 @@ public class ComponentService {
                 .build();
         componentRepository.save(item);
 
-        // Define Pipeline de Componente conforme PDF: PREP -> ASSEMBLY -> QUALITY
         ProductionPipeline pipeline = ProductionPipeline.builder()
                 .name("PIPELINE_" + componentName)
                 .steps(List.of(
